@@ -121,6 +121,10 @@ namespace ColorPicker.UserControls
         private static void OnColorSpaceChanged(DependencyObject d, DependencyPropertyChangedEventArgs args)
         {
             var sender = (SquareSlider)d;
+            if ((PickerType)args.NewValue == PickerType.OKHSV)
+                sender.colorSpaceConversionMethod = static (h, s, v) => Models.ColorSpaces.RgbHelper.OkHsvToRgb(h, s, v);
+            if ((PickerType)args.NewValue == PickerType.OKHSL)
+                sender.colorSpaceConversionMethod = static (h, s, l) => Models.ColorSpaces.RgbHelper.OkHslToRgb(h, s, l);
             if ((PickerType)args.NewValue == PickerType.HSV)
                 sender.colorSpaceConversionMethod = ColorSpaceHelper.HsvToRgb;
             else

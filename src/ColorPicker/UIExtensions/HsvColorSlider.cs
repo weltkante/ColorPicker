@@ -2,6 +2,8 @@
 using System.Windows.Media;
 using ColorPicker.Models;
 
+#if OBSOLETE
+
 namespace ColorPicker.UIExtensions
 {
     internal class HsvColorSlider : PreviewColorSlider
@@ -83,3 +85,5 @@ namespace ColorPicker.UIExtensions
         }
     }
 }
+
+#endif
