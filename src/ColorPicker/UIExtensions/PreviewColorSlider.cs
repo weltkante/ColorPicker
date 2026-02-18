@@ -18,17 +18,35 @@ namespace ColorPicker.ColorSlider
         public static readonly DependencyProperty SmallChangeBindableProperty =
             DependencyProperty.Register(nameof(SmallChangeBindable), typeof(double), typeof(PreviewColorSlider),
                 new PropertyMetadata(1.0, SmallChangeBindableChangedCallback));
-        
+
+        private readonly LinearGradientBrush backgroundBrush = new LinearGradientBrush();
+
+        private SolidColorBrush _leftCapColor = new SolidColorBrush();
+
+        private SolidColorBrush _rightCapColor = new SolidColorBrush();
+
         public static readonly DependencyProperty SliderTypeProperty =
             DependencyProperty.Register(nameof(SliderTypeProperty), typeof(ColorSliderType), typeof(PreviewColorSlider),
                 new PropertyMetadata(ColorSliderType.RgbRed, ColorSliderTypeChangedCallback));
-        
+
         public ColorSliderType SliderType
         {
             get => (ColorSliderType)GetValue(SliderTypeProperty);
             set => SetValue(SliderTypeProperty, value);
         }
-        
+
+        private IColorSliderType colorSliderTypeImpl;
+
+        public PreviewColorSlider()
+        {
+            Minimum = 0;
+            Maximum = 255;
+            SmallChange = 1;
+            LargeChange = 10;
+            MinHeight = 12;
+            PreviewMouseWheel += OnPreviewMouseWheel;
+        }
+
         public double SmallChangeBindable
         {
             get => (double)GetValue(SmallChangeBindableProperty);
@@ -40,52 +58,35 @@ namespace ColorPicker.ColorSlider
             get => (ColorState)GetValue(CurrentColorStateProperty);
             set => SetValue(CurrentColorStateProperty, value);
         }
-        
-        
+
         public GradientStopCollection BackgroundGradient
         {
             get => backgroundBrush.GradientStops;
             set => backgroundBrush.GradientStops = value;
         }
-        
-        private readonly LinearGradientBrush backgroundBrush = new();
-        private SolidColorBrush leftCapColor = new();
-        private SolidColorBrush rightCapColor = new();
 
-        private IColorSliderType colorSliderTypeImpl;
-        
         public SolidColorBrush LeftCapColor
         {
-            get => leftCapColor;
+            get => _leftCapColor;
             set
             {
-                leftCapColor = value;
+                _leftCapColor = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LeftCapColor)));
             }
         }
 
         public SolidColorBrush RightCapColor
         {
-            get => rightCapColor;
+            get => _rightCapColor;
             set
             {
-                rightCapColor = value;
+                _rightCapColor = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RightCapColor)));
             }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public PreviewColorSlider()
-        {
-            Minimum = 0;
-            Maximum = 255;
-            SmallChange = 1;
-            LargeChange = 10;
-            MinHeight = 12;
-            PreviewMouseWheel += OnPreviewMouseWheel;
-        }        
-        
         public override void EndInit()
         {
             base.EndInit();
@@ -99,7 +100,6 @@ namespace ColorPicker.ColorSlider
                 return;
 
             List<ColorSliderGradientPoint> points = colorSliderTypeImpl.CalculateRgbGradient(CurrentColorState);
-
 
             int lastIndex = points.Count - 1;
             LeftCapColor.Color = Color.FromArgb((byte)(points[0].A * 255), (byte)(points[0].R * 255), (byte)(points[0].G * 255), (byte)(points[0].B * 255));

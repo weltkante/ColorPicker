@@ -1,4 +1,6 @@
-﻿namespace ColorPicker.Models.Colors;
+﻿using System;
+
+namespace ColorPicker.Models.Colors;
 
 public struct Hsl
 {
@@ -14,4 +16,6 @@ public struct Hsl
         S = s;
         L = l;
     }
+
+    public static implicit operator Tuple<double, double, double>(Hsl rgb) => Tuple.Create(rgb.H, rgb.S, rgb.L);
 }

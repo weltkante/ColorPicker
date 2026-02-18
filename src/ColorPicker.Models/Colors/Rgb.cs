@@ -1,4 +1,6 @@
-﻿namespace ColorPicker.Models.Colors;
+﻿using System;
+
+namespace ColorPicker.Models.Colors;
 
 public struct Rgb
 {
@@ -14,4 +16,6 @@ public struct Rgb
         G = g;
         B = b;
     }
+
+    public static implicit operator Tuple<double, double, double>(Rgb rgb) => Tuple.Create(rgb.R, rgb.G, rgb.B);
 }

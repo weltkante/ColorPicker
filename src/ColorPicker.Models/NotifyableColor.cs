@@ -216,7 +216,7 @@
                 storage.ColorState = state;
             }
         }
-        
+
         public void UpdateEverything(ColorState oldValue)
         {
             var currentValue = storage.ColorState;
@@ -235,7 +235,7 @@
             if (currentValue.HSL_H != oldValue.HSL_H) RaisePropertyChanged(nameof(HSL_H));
             if (currentValue.HSL_S != oldValue.HSL_S) RaisePropertyChanged(nameof(HSL_S));
             if (currentValue.HSL_L != oldValue.HSL_L) RaisePropertyChanged(nameof(HSL_L));
-            
+
             if (currentValue.OKHSV_H != oldValue.OKHSV_H) RaisePropertyChanged(nameof(OKHSV_H));
             if (currentValue.OKHSV_S != oldValue.OKHSV_S) RaisePropertyChanged(nameof(OKHSV_S));
             if (currentValue.OKHSV_V != oldValue.OKHSV_V) RaisePropertyChanged(nameof(OKHSV_V));

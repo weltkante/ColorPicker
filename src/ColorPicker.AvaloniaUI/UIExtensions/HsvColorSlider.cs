@@ -1,7 +1,6 @@
 ﻿using Avalonia;
 using Avalonia.Media;
 using ColorPicker.Models;
-using ColorPicker.Models.ColorSpaces;
 
 namespace ColorPicker.UIExtensions;
 
@@ -59,20 +58,23 @@ internal class HsvColorSlider : PreviewColorSlider
         {
             case "H":
             {
-                var rgb = RgbHelper.HsvToRgb(value, 1.0, 1.0);
-                return Color.FromArgb(255, (byte)(rgb.R * 255), (byte)(rgb.G * 255), (byte)(rgb.B * 255));
+                var rgbtuple = ColorSpaceHelper.HsvToRgb(value, 1.0, 1.0);
+                double r = rgbtuple.Item1, g = rgbtuple.Item2, b = rgbtuple.Item3;
+                return Color.FromArgb(255, (byte)(r * 255), (byte)(g * 255), (byte)(b * 255));
             }
             case "S":
             {
-                var rgb =
-                    RgbHelper.HsvToRgb(CurrentColorState.HSV_H, value / 255.0, CurrentColorState.HSV_V);
-                return Color.FromArgb(255, (byte)(rgb.R * 255), (byte)(rgb.G * 255), (byte)(rgb.B * 255));
+                var rgbtuple =
+                    ColorSpaceHelper.HsvToRgb(CurrentColorState.HSV_H, value / 255.0, CurrentColorState.HSV_V);
+                double r = rgbtuple.Item1, g = rgbtuple.Item2, b = rgbtuple.Item3;
+                return Color.FromArgb(255, (byte)(r * 255), (byte)(g * 255), (byte)(b * 255));
             }
             case "V":
             {
-                var rgb =
-                    RgbHelper.HsvToRgb(CurrentColorState.HSV_H, CurrentColorState.HSV_S, value / 255.0);
-                return Color.FromArgb(255, (byte)(rgb.R * 255), (byte)(rgb.G * 255), (byte)(rgb.B * 255));
+                var rgbtuple =
+                    ColorSpaceHelper.HsvToRgb(CurrentColorState.HSV_H, CurrentColorState.HSV_S, value / 255.0);
+                double r = rgbtuple.Item1, g = rgbtuple.Item2, b = rgbtuple.Item3;
+                return Color.FromArgb(255, (byte)(r * 255), (byte)(g * 255), (byte)(b * 255));
             }
             default:
                 return Color.FromArgb((byte)(CurrentColorState.A * 255), (byte)(CurrentColorState.RGB_R * 255),

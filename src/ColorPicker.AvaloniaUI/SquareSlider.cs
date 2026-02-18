@@ -11,7 +11,6 @@ using Avalonia.Platform;
 using Avalonia.Reactive;
 using ColorPicker.AvaloniaUI;
 using ColorPicker.Models;
-using ColorPicker.Models.ColorSpaces;
 
 namespace ColorPicker.UserControls;
 
@@ -51,8 +50,9 @@ internal class SquareSlider : TemplatedControl
         set => SetValue(ColorProperty, value);
     }
 
-    private Action recalculateGradientMethod;
-    
+    private Func<double, double, double, Tuple<double, double, double>> colorSpaceConversionMethod =
+        ColorSpaceHelper.HsvToRgb;
+
     private IDisposable headXBinding;
     private IDisposable headYBinding;
     private Image image;
@@ -111,8 +111,6 @@ internal class SquareSlider : TemplatedControl
     {
         GradientBitmap = new WriteableBitmap(new PixelSize(32, 32), new Vector(96, 96), PixelFormats.Rgb24);
         PseudoClasses.Set(":hsv", true);
-
-        recalculateGradientMethod = RecalculateGradientHsv;
     }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -121,7 +119,7 @@ internal class SquareSlider : TemplatedControl
         image = e.NameScope.Find<Image>("PART_GradientImage");
 
         UpdateHeadBindings(this, PickerType);
-        recalculateGradientMethod();
+        RecalculateGradient();
     }
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)
@@ -144,7 +142,7 @@ internal class SquareSlider : TemplatedControl
             UpdatePos(e.GetPosition(this));
     }
 
-    private void RecalculateGradientHsv()
+    private void RecalculateGradient()
     {
         var w = GradientBitmap.PixelSize.Width;
         var h = GradientBitmap.PixelSize.Height;
@@ -153,35 +151,12 @@ internal class SquareSlider : TemplatedControl
         for (var j = 0; j < h; j++)
         for (var i = 0; i < w; i++)
         {
-            var rgb = RgbHelper.HsvToRgb(hue, i / (double)(w - 1), (h - 1 - j) / (double)(h - 1));
+            var rgbtuple = colorSpaceConversionMethod(hue, i / (double)(w - 1), (h - 1 - j) / (double)(h - 1));
+            double r = rgbtuple.Item1, g = rgbtuple.Item2, b = rgbtuple.Item3;
             var pos = (j * h + i) * 3;
-            pixels[pos] = (byte)(rgb.R * 255);
-            pixels[pos + 1] = (byte)(rgb.G * 255);
-            pixels[pos + 2] = (byte)(rgb.B * 255);
-        }
-
-        using (var framebuffer = GradientBitmap.Lock())
-        {
-            framebuffer.WritePixels(0, 0, w, h, pixels);
-        }
-
-        image.InvalidateVisual();
-    }
-
-    private void RecalculateGradientHsl()
-    {
-        var w = GradientBitmap.PixelSize.Width;
-        var h = GradientBitmap.PixelSize.Height;
-        var hue = Hue;
-        var pixels = new byte[w * h * 3];
-        for (var j = 0; j < h; j++)
-        for (var i = 0; i < w; i++)
-        {
-            var rgb = RgbHelper.HslToRgb(hue, i / (double)(w - 1), (h - 1 - j) / (double)(h - 1));
-            var pos = (j * h + i) * 3;
-            pixels[pos] = (byte)(rgb.R * 255);
-            pixels[pos + 1] = (byte)(rgb.G * 255);
-            pixels[pos + 2] = (byte)(rgb.B * 255);
+            pixels[pos] = (byte)(r * 255);
+            pixels[pos + 1] = (byte)(g * 255);
+            pixels[pos + 2] = (byte)(b * 255);
         }
 
         using (var framebuffer = GradientBitmap.Lock())
@@ -195,12 +170,16 @@ internal class SquareSlider : TemplatedControl
     private static void OnColorSpaceChanged(AvaloniaPropertyChangedEventArgs<PickerType> args)
     {
         var sender = (SquareSlider)args.Sender;
+        if (args.NewValue.Value == PickerType.OKHSV)
+            sender.colorSpaceConversionMethod = static (h, s, v) => Models.ColorSpaces.RgbHelper.OkHsvToRgb(h, s, v);
+        if (args.NewValue.Value == PickerType.OKHSL)
+            sender.colorSpaceConversionMethod = static (h, s, l) => Models.ColorSpaces.RgbHelper.OkHslToRgb(h, s, l);
         if (args.NewValue.Value == PickerType.HSV)
-            sender.recalculateGradientMethod = sender.RecalculateGradientHsv;
+            sender.colorSpaceConversionMethod = ColorSpaceHelper.HsvToRgb;
         else
-            sender.recalculateGradientMethod = sender.RecalculateGradientHsl;
+            sender.colorSpaceConversionMethod = ColorSpaceHelper.HslToRgb;
 
-        sender.recalculateGradientMethod();
+        sender.RecalculateGradient();
         sender.PseudoClasses.Set(":hsv", args.NewValue.Value == PickerType.HSV);
         sender.PseudoClasses.Set(":hsl", args.NewValue.Value == PickerType.HSL);
         UpdateHeadBindings(sender, args.NewValue.Value);
@@ -233,7 +212,7 @@ internal class SquareSlider : TemplatedControl
 
     private static void OnHueChanged(AvaloniaPropertyChangedEventArgs<double> args)
     {
-        ((SquareSlider)args.Sender).recalculateGradientMethod();
+        ((SquareSlider)args.Sender).RecalculateGradient();
     }
 
     private void UpdatePos(Point pos)
