@@ -1,6 +1,8 @@
 ﻿using System.Windows;
 using System.Windows.Media;
 
+#if OBSOLETE
+
 namespace ColorPicker.UIExtensions
 {
     internal class RgbColorSlider : PreviewColorSlider
@@ -47,3 +49,5 @@ namespace ColorPicker.UIExtensions
         }
     }
 }
+
+#endif
